@@ -1,8 +1,9 @@
+<!-- Footer -->
 <div id ="footer">
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-            	<?php
+                <?php
                         include 'config.php';
                         $sql="SELECT * FROM setting";
                         $result=mysqli_query($conn,$sql) or die("Query failed:Select");
@@ -18,5 +19,6 @@
         </div>
     </div>
 </div>
+<!-- /Footer -->
 </body>
 </html>

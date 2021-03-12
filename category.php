@@ -1,79 +1,64 @@
-<?php include 'header.php'; ?>
-    <div id="main-content">
-      <div class="container">
+<?php include "header.php"; ?>
+<?php
+   if($_SESSION['userrole']=='0'){
+    header("Location:{$hostname}/admin/");
+   }
+ ?>
+<div id="admin-content">
+    <div class="container">
         <div class="row">
-            <div class="col-md-8">
-                <!-- post-container -->
-                <div class="post-container">
-                    <?php
-                     include 'config.php';
-                     $sql1="SELECT * FROM category WHERE category_id={$catid}";
-                     $result1=mysqli_query($conn,$sql1) or die("Query failed SELECT:");
-                     $row1=mysqli_fetch_assoc($result1);
-                    ?>
-                <h2 class="page-heading"><?php echo $row1['category_name'];?></h2>
-                        <?php
-                          include 'config.php';
-                           $catid=$_GET['catid'];
-                           $limit=3;
-                           if (isset($_GET['page'])) {
-                             $page=$_GET['page'];
-                           }else{
-                             $page=1;
-                           }
-                           $offset=($page-1)*$limit;
-                           $sql="SELECT * FROM post LEFT JOIN category ON category.category_id=post.category
-                                LEFT JOIN user ON post.author=user.user_id WHERE category_id=$catid
-                                ORDER BY post_id DESC LIMIT {$offset},{$limit}";
-                          $result=mysqli_query($conn,$sql);
-                          if (mysqli_num_rows($result)>0) {
-                          while ($row = mysqli_fetch_assoc($result)) {
-                         ?>
-                        <div class="post-content">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <a class="post-img" href="single.php?id=<?php echo $row['post_id']; ?>"><img src="admin/upload/<?php echo $row['post_img']; ?>" alt=""/></a>
-                                </div>
-                                <div class="col-md-8">
-                                    <div class="inner-content clearfix">
-                                        <h3><a href='single.php?id=<?php echo $row['post_id']; ?>'><?php echo $row['title'];?></a></h3>
-                                        <div class="post-information">
-                                            <span>
-                                                <i class="fa fa-tags" aria-hidden="true"></i>
-                                                <a href='category.php?catid=<?php echo $row['category_id']; ?>'><?php echo $row['category_name'] ?></a>
-                                            </span>
-                                            <span>
-                                                <i class="fa fa-user" aria-hidden="true"></i>
-                                                <a href='author.php?aid=<?php echo $row['author']; ?>'><?php echo $row['username']; ?></a>
-                                            </span>
-                                            <span>
-                                                <i class="fa fa-calendar" aria-hidden="true"></i>
-                                                <?php echo $row['post_date']; ?>
-                                            </span>
-                                        </div>
-                                        <p class="description">
-                                            <?php echo substr($row['description'],0,130) . '...';  ?>
-                                        </p>
-                                        <a class='read-more pull-right' href='single.php?id=<?php echo $row['post_id'];?>&catid=<?php echo $row['category_id'];  ?>'>read more</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <?php
-                           }
-                        }
-                        ?>
+            <div class="col-md-10">
+                <h1 class="admin-heading">All Categories</h1>
+            </div>
+            <div class="col-md-2">
+                <a class="add-new" href="add-category.php">add category</a>
+            </div>
+            <div class="col-md-12">
+                <?php 
+                       include 'config.php';
+                       $limit=3;
+                       if (isset($_GET['page'])) {
+                         $page=$_GET['page'];
+                       }else{
+                         $page=1;
+                       }
+                       $offset=($page-1)*$limit;
+                       $sql="SELECT * FROM category ORDER BY category_id ASC LIMIT {$offset},{$limit}";
+                       $result=mysqli_query($conn,$sql);
+                       if (mysqli_num_rows($result)>0) {
+            
 
-                </div><!-- /post-container -->
-                <?php
-                     $sql1="SELECT * FROM category Where category_id={$catid}";
+                ?>
+                <table class="content-table">
+                    <thead>
+                        <th>S.No.</th>
+                        <th>Category Name</th>
+                        <th>No. of Posts</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                    </thead>
+                    <tbody>
+                        <?php while ($row = mysqli_fetch_assoc($result)) {
+                         ?>
+                        <tr>
+                            <td class='id'><?php echo $row['category_id'];?></td>
+                            <td><?php echo $row['category_name'];?></td>
+                            <td><?php echo $row['post'];?></td>
+                            <td class='edit'><a href='update-category.php?id=<?php echo $row['category_id']; ?>'><i class='fa fa-edit'></i></a></td>
+                            <td class='delete'><a href='delete-category.php?id=<?php echo $row['category_id']; ?>'><i class='fa fa-trash-o'></i></a></td>
+                        </tr>
+                         <?php }//end of while ?>
+                    </tbody>
+                </table>
+                <?php }//end of table show data ?>
+                <?php $sql1="SELECT * FROM category";
                      $result1=mysqli_query($conn,$sql1) or die("Query failed");
                      if (mysqli_num_rows($result1)>0) {
                        $total_records=mysqli_num_rows($result1);
                        $total_page=ceil($total_records / $limit);
-                       echo "<ul class='pagination'>";
+                       echo "<ul class='pagination admin-pagination'>";
                        if ($page > 1) {
-                         echo '<li><a href="index.php?page='.($page - 1).'">Pre</a></li>';
+                         echo '<li><a href="category.php?page='.($page - 1).'">Pre</a></li>';
                        }
                        
                        for ($i=1; $i <=$total_page; $i++) { 
@@ -82,18 +67,18 @@
                           }else{
                               $active="";
                           }
-                          echo "<li class='$active'><a href='index.php?page=$i'>$i</a></li>";
+                          echo "<li class='$active'><a href='category.php?page=$i'>$i</a></li>";
                         }
                         if ($total_page > $page) {
-                          echo '<li><a href="index.php?page='.($page + 1).'">Next</a></li>';
+                          echo '<li><a href="category.php?page='.($page + 1).'">Next</a></li>';
                         }
                          
                        echo "</ul>";
                      }
+
                 ?>
             </div>
-            <?php include 'sidebar.php'; ?>
         </div>
-      </div>
     </div>
-<?php include 'footer.php'; ?>
+</div>
+<?php include "footer.php"; ?>
