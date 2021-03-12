@@ -1,89 +1,58 @@
-<?php include 'header.php'; ?>
-    <div id="main-content">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-8">
-                    <!-- post-container -->
-                    <div class="post-container">
-                        <?php
-                          include 'config.php';
-                           $limit=3;
-                           if (isset($_GET['page'])) {
-                             $page=$_GET['page'];
-                           }else{
-                             $page=1;
-                           }
-                           $offset=($page-1)*$limit;
-                           $sql="SELECT * FROM post LEFT JOIN category ON category.category_id=post.category
-                                LEFT JOIN user ON post.author=user.user_id ORDER BY post_id DESC LIMIT {$offset},{$limit}";
-                          $result=mysqli_query($conn,$sql);
-                          if (mysqli_num_rows($result)>0) {
-                          while ($row = mysqli_fetch_assoc($result)) {
-                         ?>
-                        <div class="post-content">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <a class="post-img" href="single.php?id=<?php echo $row['post_id']; ?>"><img src="admin/upload/<?php echo $row['post_img']; ?>" alt=""/></a>
-                                </div>
-                                <div class="col-md-8">
-                                    <div class="inner-content clearfix">
-                                        <h3><a href='single.php?id=<?php echo $row['post_id']; ?>'><?php echo $row['title'];?></a></h3>
-                                        <div class="post-information">
-                                            <span>
-                                                <i class="fa fa-tags" aria-hidden="true"></i>
-                                                <a href='category.php?catid=<?php echo $row['category_id']; ?>'><?php echo $row['category_name'] ?></a>
-                                            </span>
-                                            <span>
-                                                <i class="fa fa-user" aria-hidden="true"></i>
-                                                <a href='author.php?aid=<?php echo $row['author']; ?>'><?php echo $row['username']; ?></a>
-                                            </span>
-                                            <span>
-                                                <i class="fa fa-calendar" aria-hidden="true"></i>
-                                                <?php echo $row['post_date']; ?>
-                                            </span>
-                                        </div>
-                                        <p class="description">
-                                            <?php echo substr($row['description'],0,130) . '...';  ?>
-                                        </p>
-                                        <a class='read-more pull-right' href='single.php?id=<?php echo $row['post_id']; ?>'>read more</a>
-                                    </div>
-                                </div>
+<!doctype html>
+<html>
+   <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>ADMIN | Login</title>
+        <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
+        <link rel="stylesheet" href="../assets/css/font-awesome.css">
+        <link rel="stylesheet" href="../assets/css/style.css">
+    </head>
+
+    <body>
+        <div id="wrapper-admin" class="body-content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-offset-4 col-md-4">
+                        <img class="logo" src="../images/thenews.png">
+                        <h3 class="heading">Admin</h3>
+                        <!-- Form Start -->
+                        <form  action="<?php $_SERVER['PHP_SELF']; ?>" method ="POST">
+                            <div class="form-group">
+                                <label>Username</label>
+                                <input type="text" name="username" class="form-control" placeholder="" required>
                             </div>
-                        </div>
+                            <div class="form-group">
+                                <label>Password</label>
+                                <input type="password" name="password" class="form-control" placeholder="" required>
+                            </div>
+                            <input type="submit" name="login" class="btn btn-primary" value="login" />
+                        </form>
+                        <!-- /Form  End -->
                         <?php
-                           }
-                        }
+                               include 'config.php';
+                               if (isset($_POST['login'])) {
+                                   $username=mysqli_real_escape_string($conn,$_POST['username']);
+                                   $password=md5($_POST['password']);
+                                   $sql="SELECT * FROM user WHERE username='$username' AND password='$password'";
+                                   $result=mysqli_query($conn,$sql) or die("Query error");
+                                    if (mysqli_num_rows($result) > 0) {
+                                          session_start();
+                                          while ($row = mysqli_fetch_assoc($result)) {
+                                          $_SESSION['username']=$row['username'];
+                                          $_SESSION['userid']=$row['user_id'];
+                                          $_SESSION['userrole']=$row['role'];  
+                                          } 
+                                          header("Location:{$hostname}/admin/post.php");
+                                   }else {
+                                      echo "You are not an Amnim";
+                                       } 
+                               }//end of isset if
                         ?>
-                    </div><!-- /post-container -->
-                    <?php
-                     $sql1="SELECT * FROM post";
-                     $result1=mysqli_query($conn,$sql1) or die("Query failed");
-                     if (mysqli_num_rows($result1)>0) {
-                       $total_records=mysqli_num_rows($result1);
-                       $total_page=ceil($total_records / $limit);
-                       echo "<ul class='pagination'>";
-                       if ($page > 1) {
-                         echo '<li><a href="index.php?page='.($page - 1).'">Pre</a></li>';
-                       }
-                       
-                       for ($i=1; $i <=$total_page; $i++) { 
-                          if ($i==$page) {
-                             $active="active";
-                          }else{
-                              $active="";
-                          }
-                          echo "<li class='$active'><a href='index.php?page=$i'>$i</a></li>";
-                        }
-                        if ($total_page > $page) {
-                          echo '<li><a href="index.php?page='.($page + 1).'">Next</a></li>';
-                        }
-                         
-                       echo "</ul>";
-                     }
-                ?>
+                    </div>
                 </div>
-                <?php include 'sidebar.php'; ?>
             </div>
         </div>
-    </div>
-<?php include 'footer.php'; ?>
+    </body>
+</html>
